@@ -5,8 +5,13 @@ import openai
 import os
 import tempfile
 
-# Set your OpenAI API key
-openai.api_key = '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'
+from dotenv import load_dotenv
+
+load_dotenv()  # Load variables from .env file
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+
+
 
 app = Flask(__name__)
 
@@ -22,7 +27,7 @@ def get_information():
     temp_dir = tempfile.gettempdir()
     download_path = os.path.join(temp_dir, "youtube_audio.mp4")
     try:
-        # Use OpenAI API to get song information
+        # Use OpenAI API to get song information with the new version
         prompt = f"Provide the name, BPM, key, and length of the song in this YouTube link: {youtube_url}."
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
@@ -49,6 +54,7 @@ def get_information():
 
         # Render the information on the page
         return render_template('index.html', youtube_url=youtube_url, song_info=song_info, song_length=song_length)
+
     except openai.error.OpenAIError as e:
         return f"Error: Unable to retrieve song information. {str(e)}"
     except Exception as e:
@@ -57,6 +63,8 @@ def get_information():
         # Cleanup downloaded files
         if os.path.exists(download_path):
             os.remove(download_path)
+
+
 
 # Route to handle conversion and download
 @app.route('/convert', methods=['POST'])
